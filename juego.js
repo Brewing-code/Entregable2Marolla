@@ -6,6 +6,15 @@ let empates = 0;
 let totalManos = 0;
 let maxManos = 10;
 
+class Resultado {
+    constructor(mano, eleccionUsuario, resultadoRandom, mensaje) {
+        this.mano = mano;
+        this.eleccionUsuario = eleccionUsuario;
+        this.resultadoRandom = resultadoRandom;
+        this.mensaje = mensaje;
+    }
+}
+
 // Función que selecciona una opción aleatoria del array
 function opcionesRandom(arr) {
     let opcionRandom = Math.floor(Math.random() * arr.length);
@@ -53,7 +62,7 @@ function compararResultados(resultadoRandom, eleccionUsuario) {
     totalManos++;
     actualizarMarcador();
     mostrarResultado(mensaje); 
-    guardarResultadoEnSessionStorage(totalManos, mensaje); 
+    guardarResultadoEnSessionStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje); 
     verificarGanador();
 }
 
@@ -77,7 +86,7 @@ function actualizarHistorialDropdown() {
 
     resultados.forEach((resultado, index) => {
         let p = document.createElement('p');
-        p.textContent = `Mano ${resultado.mano}: ${resultado.resultado}`;
+        p.textContent = `Mano ${resultado.mano}: ${resultado.mensaje}`;
         dropdownContent.appendChild(p);
     });
 }
@@ -88,12 +97,17 @@ document.getElementById('dropdown-button').addEventListener('click', () => {
     dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
 });
 
-function guardarResultadoEnSessionStorage(mano, resultado) {
+function guardarResultadoEnSessionStorage(mano, eleccionUsuario, resultadoRandom, mensaje) {
     let resultados = JSON.parse(sessionStorage.getItem('resultados')) || [];
-    resultados.push({ mano, resultado });
-    sessionStorage.setItem('resultados', JSON.stringify(resultados));
+    
+    // Creamos una nueva instancia de Resultado
+    let nuevoResultado = new Resultado(mano, eleccionUsuario, resultadoRandom, mensaje);
+    
+    resultados.push(nuevoResultado); 
+    sessionStorage.setItem('resultados', JSON.stringify(resultados)); 
     actualizarHistorialDropdown(); 
 }
+
 // Verifica si alguien ganó la partida según el tipo "mejor de"
 function verificarGanador() {
     let umbralVictorias = Math.ceil(maxManos / 2);
@@ -139,23 +153,23 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
     sessionStorage.removeItem('resultados');
 });
 
-// Agregar eventos a los botones al cargar la página
+// Agregamos eventos a los botones al cargar la página
 window.onload = function() {
     const botonesJuego = document.querySelectorAll('.opcion');
 
-    // Deshabilitar los botones al cargar la página
+    // Deshabilitamos los botones al cargar la página
     botonesJuego.forEach(boton => {
         boton.disabled = true;
     });
 
-    // Agregar eventos a los botones de opción
+    // Agregamos eventos a los botones de opción
     document.querySelectorAll('.opcion').forEach(button => {
         button.addEventListener('click', (event) => {
             let eleccionUsuario = event.target.getAttribute('data-eleccion');
             iniciarJuego(eleccionUsuario);
         });
 
-        // Habilitar los botones cuando se presiona 'iniciar-partida'
+        // Habilitamos los botones cuando se presiona 'iniciar-partida'
         document.getElementById('iniciar-partida').addEventListener('click', function() {
             botonesJuego.forEach(boton => {
                 boton.disabled = false;
@@ -163,7 +177,7 @@ window.onload = function() {
         });
     });
 
-    // Agregar animación a la imagen principal
+    // Agregamos animación a la imagen principal
     const imagenPrincipal = document.querySelector('img');
     function animarImagen() {
         imagenPrincipal.classList.add('animated');
@@ -172,7 +186,7 @@ window.onload = function() {
         }, 500);
     }
 
-    // Agregar evento de animación a los botones
+    // Agregamos evento de animación a los botones
     document.querySelectorAll('.opcion').forEach(button => {
         button.addEventListener('click', animarImagen);
     });
