@@ -52,8 +52,8 @@ function compararResultados(resultadoRandom, eleccionUsuario) {
 
     totalManos++;
     actualizarMarcador();
-    mostrarResultado(mensaje); // Muestra el resultado en #resultado
-    guardarResultadoEnSessionStorage(totalManos, mensaje); // Guarda el resultado en sessionStorage
+    mostrarResultado(mensaje); 
+    guardarResultadoEnSessionStorage(totalManos, mensaje); 
     verificarGanador();
 }
 
@@ -69,11 +69,11 @@ function actualizarMarcador() {
     document.getElementById('empates').textContent = empates;
 }
 
-
+//Creamos un dropdown y guardamos el resultado de cada mano.
 function actualizarHistorialDropdown() {
     let resultados = JSON.parse(sessionStorage.getItem('resultados')) || [];
     let dropdownContent = document.getElementById('dropdown-content');
-    dropdownContent.innerHTML = ''; // Limpiamos el contenido antes de actualizar
+    dropdownContent.innerHTML = ''; 
 
     resultados.forEach((resultado, index) => {
         let p = document.createElement('p');
@@ -92,7 +92,7 @@ function guardarResultadoEnSessionStorage(mano, resultado) {
     let resultados = JSON.parse(sessionStorage.getItem('resultados')) || [];
     resultados.push({ mano, resultado });
     sessionStorage.setItem('resultados', JSON.stringify(resultados));
-    actualizarHistorialDropdown(); // Actualizamos el historial visualmente
+    actualizarHistorialDropdown(); 
 }
 // Verifica si alguien ganó la partida según el tipo "mejor de"
 function verificarGanador() {
@@ -119,12 +119,9 @@ function reiniciarPartida() {
     totalManos = 0;
     const botonesJuego = document.querySelectorAll('.opcion');
     botonesJuego.forEach(boton => {
-        boton.disabled = true;  // Vuelve a deshabilitar los botones
+        boton.disabled = true;  
     });
 }
-
-
-
 
 // Iniciar juego basado en la elección del usuario
 function iniciarJuego(eleccionUsuario) {
@@ -145,21 +142,26 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
 // Agregar eventos a los botones al cargar la página
 window.onload = function() {
     const botonesJuego = document.querySelectorAll('.opcion');
+
+    // Deshabilitar los botones al cargar la página
     botonesJuego.forEach(boton => {
-        boton.disabled = true;  // Deshabilita cada botón del juego
+        boton.disabled = true;
     });
+
+    // Agregar eventos a los botones de opción
     document.querySelectorAll('.opcion').forEach(button => {
         button.addEventListener('click', (event) => {
             let eleccionUsuario = event.target.getAttribute('data-eleccion');
             iniciarJuego(eleccionUsuario);
         });
+
+        // Habilitar los botones cuando se presiona 'iniciar-partida'
         document.getElementById('iniciar-partida').addEventListener('click', function() {
             botonesJuego.forEach(boton => {
-                boton.disabled = false;  // Habilita cada botón del juego
+                boton.disabled = false;
             });
-        })    
+        });
     });
-  
 
     // Agregar animación a la imagen principal
     const imagenPrincipal = document.querySelector('img');
@@ -169,9 +171,9 @@ window.onload = function() {
             imagenPrincipal.classList.remove('animated');
         }, 500);
     }
-    
+
     // Agregar evento de animación a los botones
     document.querySelectorAll('.opcion').forEach(button => {
         button.addEventListener('click', animarImagen);
     });
-}; 
+};
