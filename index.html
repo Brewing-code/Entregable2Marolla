@@ -28,14 +28,7 @@ donde agregan dos opciones mas.-->
     <!-- Contenedor para mostrar el resultado de cada mano -->
 <div id="resultado"></div>
 
-<div id="historial-resultados">
-    <div class="dropdown">
-        <button id="dropdown-button" class="dropdown-btn">Mostrar resultados</button>
-        <div id="dropdown-content" class="dropdown-content">
-          <!-- Aquí se llenarán los resultados -->
-        </div>
-    </div>
-</div>
+
 
 <!-- Menú para seleccionar las opciones de partida -->
 <div id="menu-partida">
@@ -47,17 +40,15 @@ donde agregan dos opciones mas.-->
     <button id="iniciar-partida">Iniciar Partida</button>
 </div>
 
+
 <!-- Marcador de victorias y derrotas -->
 <div id="marcador">
     <p>Victorias: <span id="victorias">0</span></p>
     <p>Empates: <span id="empates">0</span></p>
     <p>Derrotas: <span id="derrotas">0</span></p>
 </div>
-
-<!-- Div para mostrar el mensaje final de la partida -->
-<div id="mensaje-final"></div>
-
-
+ 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="juego.js"></script>
 </body>
 </html>

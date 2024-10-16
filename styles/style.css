@@ -127,20 +127,6 @@ body {
     margin-bottom: 20px; 
 }
 
-#mensaje-final {
-    font-size: 20px;
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    background-color: rgb(6, 18, 87);
-    color:whitesmoke;
-    box-shadow:  2px 2px 10px rgb(175, 216, 241), -2px -2px 10px rgb(175, 216, 241);
-    border: 2px solid rgb(181, 251, 251);
-    border-radius: 10px;
-    padding: 15px;
-    margin: 20px 10px;
-    width: 250px;
-    height: 20px;
-    text-align: center;
-}
 
 #iniciar-partida {
     margin: 15px auto;
@@ -164,10 +150,11 @@ body {
 
 
 .dropdown {
-    position: relative;
-    display: inline-block;
+    position: fixed;
+    top: 170px;
+    right: 100px;
     text-align: center;
-    width: 100%;
+    
 }
   
 .dropdown-content {
@@ -228,3 +215,6 @@ body {
     border: 2px solid rgb(181, 251, 251);
     border-radius: 10px;
 }
+
+
+

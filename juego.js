@@ -3,8 +3,7 @@ let opciones = ['Piedra', 'Papel', 'Tijera', 'Lagarto', 'Spock'];
 let victorias = 0;
 let derrotas = 0;
 let empates = 0;
-let totalManos = 0;
-let maxManos = 10;
+let maxManos = 10; // Puedes cambiar este valor a 20 si es necesario
 
 class Resultado {
     constructor(mano, eleccionUsuario, resultadoRandom, mensaje) {
@@ -59,11 +58,14 @@ function compararResultados(resultadoRandom, eleccionUsuario) {
             break;
     }
 
+    let totalManos = parseInt(sessionStorage.getItem('totalManos')) || 0;
     totalManos++;
+    sessionStorage.setItem('totalManos', totalManos); // Guardar total de manos en sessionStorage
+
     actualizarMarcador();
     mostrarResultado(mensaje); 
-    guardarResultadoEnSessionStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje); 
-    verificarGanador();
+    guardarResultadoEnLocalStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje);
+    verificarGanador(totalManos); // Pasamos el total de manos aquí
 }
 
 // Muestra el resultado de cada mano en el div #resultado
@@ -78,59 +80,58 @@ function actualizarMarcador() {
     document.getElementById('empates').textContent = empates;
 }
 
-//Creamos un dropdown y guardamos el resultado de cada mano.
-function actualizarHistorialDropdown() {
-    let resultados = JSON.parse(sessionStorage.getItem('resultados')) || [];
-    let dropdownContent = document.getElementById('dropdown-content');
-    dropdownContent.innerHTML = ''; 
-
-    resultados.forEach((resultado, index) => {
-        let p = document.createElement('p');
-        p.textContent = `Mano ${resultado.mano}: ${resultado.mensaje}`;
-        dropdownContent.appendChild(p);
-    });
-}
-
-// Mostrar/ocultar el dropdown
-document.getElementById('dropdown-button').addEventListener('click', () => {
-    let dropdownContent = document.getElementById('dropdown-content');
-    dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
-});
-
-function guardarResultadoEnSessionStorage(mano, eleccionUsuario, resultadoRandom, mensaje) {
-    let resultados = JSON.parse(sessionStorage.getItem('resultados')) || [];
-    
-    // Creamos una nueva instancia de Resultado
+// Guardar el resultado en local storage
+function guardarResultadoEnLocalStorage(mano, eleccionUsuario, resultadoRandom, mensaje) {
+    let resultados = JSON.parse(localStorage.getItem('resultados')) || [];
     let nuevoResultado = new Resultado(mano, eleccionUsuario, resultadoRandom, mensaje);
-    
-    resultados.push(nuevoResultado); 
-    sessionStorage.setItem('resultados', JSON.stringify(resultados)); 
-    actualizarHistorialDropdown(); 
+    resultados.push(nuevoResultado);
+    localStorage.setItem('resultados', JSON.stringify(resultados));
 }
 
-// Verifica si alguien ganó la partida según el tipo "mejor de"
-function verificarGanador() {
+// Verifica si alguien ganó la partida
+function verificarGanador(totalManos) {
     let umbralVictorias = Math.ceil(maxManos / 2);
 
-    if (victorias > umbralVictorias || derrotas > umbralVictorias || totalManos === maxManos) {
-        let mensajeFinal = victorias > derrotas ?  'Ganaste, genio del azar' :
-            derrotas > victorias ?  'Perdiste pichon' : 'Empate aburrido';
+    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
+        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
+                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
         mostrarMensajeFinal(mensajeFinal); 
         reiniciarPartida();
     }
 }
 
-// Muestra el mensaje final de la partida en el div #mensaje-final
+// Muestra el mensaje final de la partida
+// Al finalizar la partida
 function mostrarMensajeFinal(mensajeFinal) {
-    document.getElementById('mensaje-final').textContent = mensajeFinal; 
+    
+    Swal.fire({
+        title: mensajeFinal,
+        text: "¿Seguimos jugando?",
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Iniciar partida',
+        cancelButtonText: 'Salir',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Reinicia la partida si se presiona "Iniciar partida"
+            reiniciarPartida();
+            actualizarMarcador();
+            document.getElementById('resultado').textContent = '';
+            const botonesJuego = document.querySelectorAll('.opcion');
+            botonesJuego.forEach(boton => {
+                boton.disabled = false; // Habilitar botones
+            });
+        } 
+    });
 }
 
-
+// Reinicia la partida
 function reiniciarPartida() {
     victorias = 0;
     derrotas = 0;
     empates = 0;
-    totalManos = 0;
+    sessionStorage.removeItem('totalManos'); // Limpiar total de manos en sessionStorage
+
     const botonesJuego = document.querySelectorAll('.opcion');
     botonesJuego.forEach(boton => {
         boton.disabled = true;  
@@ -140,20 +141,59 @@ function reiniciarPartida() {
 // Iniciar juego basado en la elección del usuario
 function iniciarJuego(eleccionUsuario) {
     let resultadoRandom = opcionesRandom(opciones);
+    animarImagen();
     compararResultados(resultadoRandom, eleccionUsuario);
+}
+
+// Cargar resultados almacenados al cargar la página
+function cargarResultadosAlCargarPagina() {
+    let resultadosGuardados = JSON.parse(localStorage.getItem('resultados'));
+    if (resultadosGuardados) {
+        resultadosGuardados.forEach((resultado) => {
+            mostrarResultado(resultado.mensaje);
+            victorias += (resultado.mensaje.includes('Ganaste')) ? 1 : 0;
+            derrotas += (resultado.mensaje.includes('Perdiste')) ? 1 : 0;
+            empates += (resultado.mensaje === 'Empate') ? 1 : 0;
+        });
+        let totalManos = resultadosGuardados.length; // Total de manos jugadas
+        sessionStorage.setItem('totalManos', totalManos); // Guardar total de manos en sessionStorage
+        actualizarMarcador();
+        
+    }
+}
+
+// Agregar animación a la imagen principal
+const imagenPrincipal = document.querySelector('img');
+function animarImagen() {
+    imagenPrincipal.classList.add('animated');
+    setTimeout(() => {
+        imagenPrincipal.classList.remove('animated');
+    }, 1000);
 }
 
 // Evento para iniciar la partida
 document.getElementById('iniciar-partida').addEventListener('click', () => {
-    maxManos = parseInt(document.getElementById('opciones-partida').value);
-    reiniciarPartida();
-    actualizarMarcador();
-    document.getElementById('mensaje-final').textContent = '';
-    document.getElementById('resultado').textContent = '';
-    sessionStorage.removeItem('resultados');
+    Swal.fire({
+        title: '¿Estás seguro de que quieres iniciar una nueva partida?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Iniciar partida',
+        cancelButtonText: 'Cancelar',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            reiniciarPartida();
+            actualizarMarcador();
+            
+            document.getElementById('resultado').textContent = '';
+            const botonesJuego = document.querySelectorAll('.opcion');
+            botonesJuego.forEach(boton => {
+                boton.disabled = false; // Habilitar botones solo si se acepta el confirm
+            });
+        }
+    });
 });
 
-// Agregamos eventos a los botones al cargar la página
+// Agregar eventos a los botones al cargar la página
 window.onload = function() {
     const botonesJuego = document.querySelectorAll('.opcion');
 
@@ -162,32 +202,14 @@ window.onload = function() {
         boton.disabled = true;
     });
 
-    // Agregamos eventos a los botones de opción
-    document.querySelectorAll('.opcion').forEach(button => {
+    // Cargar resultados si hay una partida guardada
+    cargarResultadosAlCargarPagina();
+
+    // Agregar eventos a los botones de opción
+    botonesJuego.forEach(button => {
         button.addEventListener('click', (event) => {
             let eleccionUsuario = event.target.getAttribute('data-eleccion');
             iniciarJuego(eleccionUsuario);
         });
-
-        // Habilitamos los botones cuando se presiona 'iniciar-partida'
-        document.getElementById('iniciar-partida').addEventListener('click', function() {
-            botonesJuego.forEach(boton => {
-                boton.disabled = false;
-            });
-        });
     });
-
-    // Agregamos animación a la imagen principal
-    const imagenPrincipal = document.querySelector('img');
-    function animarImagen() {
-        imagenPrincipal.classList.add('animated');
-        setTimeout(() => {
-            imagenPrincipal.classList.remove('animated');
-        }, 500);
-    }
-
-    // Agregamos evento de animación a los botones
-    document.querySelectorAll('.opcion').forEach(button => {
-        button.addEventListener('click', animarImagen);
-    });
-};
+}
