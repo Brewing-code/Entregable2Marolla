@@ -55,7 +55,6 @@ function guardarEstadoPartidaEnLocalStorage() {
 function reiniciarPartida() {
     sessionStorage.removeItem('totalManos'); // Limpiar total de manos en sessionStorage
     localStorage.removeItem('partidaEnCurso'); // Limpiar estado de partida
-    localStorage.removeItem('resultados');
     victorias = 0;
     derrotas = 0;
     empates = 0;
