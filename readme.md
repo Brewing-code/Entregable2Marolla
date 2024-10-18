@@ -1,7 +1,8 @@
 # Juego de Piedra, Papel, Tijera, Lagarto, Spock
 
 ## Descripción
-Este es un juego clásico de Piedra, Papel, Tijera, Lagarto, Spock, donde puedes jugar contra la computadora. El juego utiliza lógica aleatoria para determinar el resultado de cada ronda y lleva un marcador de victorias, derrotas y empates.
+Es un simulador del conocido juego piedra, papel o tijera, pero adaptado segun la serie de sitcom "The Big Bang Theory",
+donde agregan dos opciones mas y puedes jugar contra la computadora. El juego utiliza lógica aleatoria para determinar el resultado de cada ronda y lleva un marcador de victorias, derrotas y empates.
 
 ## Instrucciones
 1. Selecciona el número de manos que deseas jugar (mejor de 10 o mejor de 20).
