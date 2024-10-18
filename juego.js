@@ -20,8 +20,92 @@ function opcionesRandom(arr) {
     return arr[opcionRandom];
 }
 
+// Muestra el resultado de cada mano en el div #resultado
+function mostrarResultado(mensaje) {
+    document.getElementById('resultado').textContent = mensaje;
+}
+
+// Actualiza el marcador en la interfaz
+function actualizarMarcador() {
+    document.getElementById('victorias').textContent = victorias;
+    document.getElementById('derrotas').textContent = derrotas;
+    document.getElementById('empates').textContent = empates;
+}
+
+// Guardar el resultado en local storage
+function guardarResultadoEnLocalStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje) {
+    let resultados = JSON.parse(localStorage.getItem('resultados')) || [];
+    let nuevoResultado = new Resultado(totalManos, eleccionUsuario, resultadoRandom, mensaje);
+    resultados.push(nuevoResultado);
+    localStorage.setItem('resultados', JSON.stringify(resultados));
+}
+
+// Guardar el estado de la partida en localStorage
+function guardarEstadoPartidaEnLocalStorage() {
+    const estadoPartida = {
+        victorias: victorias,
+        derrotas: derrotas,
+        empates: empates,
+        totalManos: parseInt(sessionStorage.getItem('totalManos')) || 0
+    };
+    localStorage.setItem('partidaEnCurso', JSON.stringify(estadoPartida));
+}
+
+// Reinicia la partida
+function reiniciarPartida() {
+    sessionStorage.removeItem('totalManos'); // Limpiar total de manos en sessionStorage
+    localStorage.removeItem('partidaEnCurso'); // Limpiar estado de partida
+    localStorage.removeItem('resultados');
+    victorias = 0;
+    derrotas = 0;
+    empates = 0;
+    const botonesJuego = document.querySelectorAll('.opcion');
+    botonesJuego.forEach(boton => {
+        boton.disabled = true;  
+    });
+}
+
+// Muestra el mensaje final de la partida
+function mostrarMensajeFinal(mensajeFinal) {
+    Swal.fire({
+        title: mensajeFinal,
+        text: "¿Seguimos jugando?",
+        background: 'rgb(6, 18, 87)',
+        color: 'whitesmoke',  // Color del texto
+        customClass: {
+            popup: 'popup-custom',
+            confirmButton: 'confirm-button-custom',
+            cancelButton: 'cancel-button-custom'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Sigamos',
+        cancelButtonText: 'Ya fue, es un embole',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            reiniciarPartida();
+            actualizarMarcador();
+            document.getElementById('resultado').textContent = '';
+            const botonesJuego = document.querySelectorAll('.opcion');
+            botonesJuego.forEach(boton => {
+                boton.disabled = false; // Habilitar botones
+            });
+        }
+    });
+}
 
 
+
+// Verifica si alguien ganó la partida
+function verificarGanador(totalManos) {
+    let umbralVictorias = Math.ceil(maxManos / 2);
+
+    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
+        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
+                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
+        mostrarMensajeFinal(mensajeFinal); 
+        reiniciarPartida();
+    }
+}
 // Función que compara los resultados y determina el ganador
 function compararResultados(resultadoRandom, eleccionUsuario) {
     let combinacion = resultadoRandom + '-' + eleccionUsuario;
@@ -71,37 +155,6 @@ function compararResultados(resultadoRandom, eleccionUsuario) {
     verificarGanador(totalManos); // Pasamos el total de manos aquí
 }
 
-// Muestra el resultado de cada mano en el div #resultado
-function mostrarResultado(mensaje) {
-    document.getElementById('resultado').textContent = mensaje;
-}
-
-// Actualiza el marcador en la interfaz
-function actualizarMarcador() {
-    document.getElementById('victorias').textContent = victorias;
-    document.getElementById('derrotas').textContent = derrotas;
-    document.getElementById('empates').textContent = empates;
-}
-
-// Guardar el resultado en local storage
-function guardarResultadoEnLocalStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje) {
-    let resultados = JSON.parse(localStorage.getItem('resultados')) || [];
-    let nuevoResultado = new Resultado(totalManos, eleccionUsuario, resultadoRandom, mensaje);
-    resultados.push(nuevoResultado);
-    localStorage.setItem('resultados', JSON.stringify(resultados));
-}
-
-// Guardar el estado de la partida en localStorage
-function guardarEstadoPartidaEnLocalStorage() {
-    const estadoPartida = {
-        victorias: victorias,
-        derrotas: derrotas,
-        empates: empates,
-        totalManos: parseInt(sessionStorage.getItem('totalManos')) || 0
-    };
-    localStorage.setItem('partidaEnCurso', JSON.stringify(estadoPartida));
-}
-
 // Cargar estado de la partida en curso al cargar la página
 function cargarEstadoPartida() {
     const partidaGuardada = JSON.parse(localStorage.getItem('partidaEnCurso'));
@@ -124,82 +177,6 @@ function cargarEstadoPartida() {
     }
 }
 
-// Muestra el mensaje final de la partida
-function mostrarMensajeFinal(mensajeFinal) {
-    Swal.fire({
-        title: mensajeFinal,
-        text: "¿Seguimos jugando?",
-        background: 'rgb(6, 18, 87)',
-        color: 'whitesmoke',  // Color del texto
-        customClass: {
-            popup: 'popup-custom',
-            confirmButton: 'confirm-button-custom',
-            cancelButton: 'cancel-button-custom'
-        },
-        showCancelButton: true,
-        confirmButtonText: 'Sigamos',
-        cancelButtonText: 'Ya fue, es un embole',
-    }).then((result) => {
-        if (result.isConfirmed) {
-            reiniciarPartida();
-            actualizarMarcador();
-            document.getElementById('resultado').textContent = '';
-            const botonesJuego = document.querySelectorAll('.opcion');
-            botonesJuego.forEach(boton => {
-                boton.disabled = false; // Habilitar botones
-            });
-        }
-    });
-}
-
-// Reinicia la partida
-function reiniciarPartida() {
-    victorias = 0;
-    derrotas = 0;
-    empates = 0;
-    sessionStorage.removeItem('totalManos'); // Limpiar total de manos en sessionStorage
-    localStorage.removeItem('partidaEnCurso'); // Limpiar estado de partida
-
-    const botonesJuego = document.querySelectorAll('.opcion');
-    botonesJuego.forEach(boton => {
-        boton.disabled = true;  
-    });
-}
-
-// Verifica si alguien ganó la partida
-function verificarGanador(totalManos) {
-    let umbralVictorias = Math.ceil(maxManos / 2);
-
-    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
-        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
-                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
-        mostrarMensajeFinal(mensajeFinal); 
-        reiniciarPartida();
-    }
-}
-// Iniciar juego basado en la elección del usuario
-function iniciarJuego(eleccionUsuario) {
-    let resultadoRandom = opcionesRandom(opciones);
-    animarImagen();
-    compararResultados(resultadoRandom, eleccionUsuario);
-}
-
-// Cargar resultados almacenados al cargar la página
-function cargarResultadosAlCargarPagina() {
-    let resultadosGuardados = JSON.parse(localStorage.getItem('resultados'));
-    if (resultadosGuardados) {
-        resultadosGuardados.forEach((resultado) => {
-            mostrarResultado(resultado.mensaje);
-            victorias += (resultado.mensaje.includes('Ganaste')) ? 1 : 0;
-            derrotas += (resultado.mensaje.includes('Perdiste')) ? 1 : 0;
-            empates += (resultado.mensaje === 'Empate') ? 1 : 0;
-        });
-        let totalManos = resultadosGuardados.length; // Total de manos jugadas
-        sessionStorage.setItem('totalManos', totalManos); // Guardar total de manos en sessionStorage
-        actualizarMarcador();
-    }
-}
-
 // Agregar animación a la imagen principal
 const imagenPrincipal = document.querySelector('img');
 function animarImagen() {
@@ -207,6 +184,13 @@ function animarImagen() {
     setTimeout(() => {
         imagenPrincipal.classList.remove('animated');
     }, 1000);
+}
+
+// Iniciar juego basado en la elección del usuario
+function iniciarJuego(eleccionUsuario) {
+    let resultadoRandom = opcionesRandom(opciones);
+    animarImagen();
+    compararResultados(resultadoRandom, eleccionUsuario);
 }
 
 // Mostrar modal de instrucciones al cargar la página por primera vez
@@ -245,8 +229,6 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
     }).then((result) => {
         if (result.isConfirmed) {
             reiniciarPartida();
-            
-            cargarEstadoPartida(); // Cargar estado de partida al iniciar
 
             // Habilitar los botones para jugar
             const botonesJuego = document.querySelectorAll('.opcion');
