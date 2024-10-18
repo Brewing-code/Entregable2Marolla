@@ -1,9 +1,8 @@
-// Definimos opciones como array con sus posibles valores
 let opciones = []; // Cambiamos a un array vacío que se llenará con fetch
 let victorias = 0;
 let derrotas = 0;
 let empates = 0;
-let maxManos = 10; // Valor por defecto
+let maxManos = 10; 
 
 class Resultado {
     constructor(mano, eleccionUsuario, resultadoRandom, mensaje) {
@@ -70,7 +69,7 @@ function mostrarMensajeFinal(mensajeFinal) {
         title: mensajeFinal,
         text: "¿Seguimos jugando?",
         background: 'rgb(6, 18, 87)',
-        color: 'whitesmoke',  // Color del texto
+        color: 'whitesmoke',  
         customClass: {
             popup: 'popup-custom',
             confirmButton: 'confirm-button-custom',
@@ -86,7 +85,7 @@ function mostrarMensajeFinal(mensajeFinal) {
             document.getElementById('resultado').textContent = '';
             const botonesJuego = document.querySelectorAll('.opcion');
             botonesJuego.forEach(boton => {
-                boton.disabled = false; // Habilitar botones
+                boton.disabled = false; 
             });
         }
     });
@@ -144,7 +143,7 @@ function compararResultados(resultadoRandom, eleccionUsuario) {
 
     let totalManos = parseInt(sessionStorage.getItem('totalManos')) || 0;
     totalManos++;
-    sessionStorage.setItem('totalManos', totalManos); // Guardar total de manos en sessionStorage
+    sessionStorage.setItem('totalManos', totalManos); // Guardamos el total de manos en sessionStorage
 
     actualizarMarcador();
     mostrarResultado(mensaje); 
@@ -197,7 +196,7 @@ function mostrarModalInstrucciones() {
         title: 'Instrucciones',
         text: 'Para empezar a jugar selecciona el número de manos y luego presiona "Iniciar Partida".',
         background: 'rgb(6, 18, 87)',
-        color: 'whitesmoke',  // Color del texto
+        color: 'whitesmoke', 
         customClass: {
             popup: 'popup-custom',
             confirmButton: 'confirm-button-custom',
@@ -209,13 +208,13 @@ function mostrarModalInstrucciones() {
 // Cargar opciones desde un archivo JSON usando fetch y async/await
 async function cargarOpciones() {
     try {
-        const response = await fetch('opciones.json'); // Carga el archivo JSON
+        const response = await fetch('opciones.json'); 
         if (!response.ok) throw new Error('Error en la carga del archivo');
         
-        const data = await response.json(); // Convierte la respuesta en JSON
-        opciones = data.opciones; // Actualiza el array de opciones
+        const data = await response.json(); 
+        opciones = data.opciones; 
     } catch (error) {
-        console.error('Error al cargar opciones:', error); // Maneja errores
+        console.error('Error al cargar opciones:', error); 
     }
 }
 
@@ -223,7 +222,7 @@ async function cargarOpciones() {
 document.getElementById('iniciar-partida').addEventListener('click', () => {
     // Obtener la opción seleccionada
     const seleccion = document.getElementById('opciones-partida').value;
-    maxManos = parseInt(seleccion); // Actualiza maxManos según la selección
+    maxManos = parseInt(seleccion); 
 
     Swal.fire({
         title: '¿Estás seguro de que quieres iniciar una nueva partida?',
@@ -231,7 +230,7 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
         confirmButtonText: 'Iniciar partida',
         cancelButtonText: 'Cancelar',
         background: 'rgb(6, 18, 87)',
-        color: 'whitesmoke',  // Color del texto
+        color: 'whitesmoke',  
         customClass: {
             popup: 'popup-custom',
             confirmButton: 'confirm-button-custom',
@@ -240,11 +239,11 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
     }).then((result) => {
         if (result.isConfirmed) {
             reiniciarPartida();
-            cargarEstadoPartida(); // Cargar el estado de la partida    
-            actualizarMarcador(); // Actualizar el marcador al inicio
+            cargarEstadoPartida();  
+            actualizarMarcador(); 
             const botonesJuego = document.querySelectorAll('.opcion');
             botonesJuego.forEach(boton => {
-                boton.disabled = false; // Habilitar botones
+                boton.disabled = false; 
             });
         }
     });
@@ -252,10 +251,10 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
 
 // Al cargar el DOM
 document.addEventListener('DOMContentLoaded', async () => {
-    await cargarOpciones(); // Cargar las opciones al iniciar
-    cargarEstadoPartida(); // Cargar el estado de la partida    
+    await cargarOpciones(); 
+    cargarEstadoPartida(); 
     if (!localStorage.getItem('partidaEnCurso') && !localStorage.getItem('resultados')) {
-        mostrarModalInstrucciones(); // Mostrar modal de instrucciones
+        mostrarModalInstrucciones(); 
     }
 });
 
