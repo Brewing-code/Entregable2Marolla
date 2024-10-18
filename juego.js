@@ -20,17 +20,7 @@ function opcionesRandom(arr) {
     return arr[opcionRandom];
 }
 
-// Verifica si alguien ganó la partida
-function verificarGanador(totalManos) {
-    let umbralVictorias = Math.ceil(maxManos / 2);
 
-    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
-        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
-                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
-        mostrarMensajeFinal(mensajeFinal); 
-        reiniciarPartida();
-    }
-}
 
 // Función que compara los resultados y determina el ganador
 function compararResultados(resultadoRandom, eleccionUsuario) {
@@ -176,6 +166,17 @@ function reiniciarPartida() {
     });
 }
 
+// Verifica si alguien ganó la partida
+function verificarGanador(totalManos) {
+    let umbralVictorias = Math.ceil(maxManos / 2);
+
+    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
+        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
+                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
+        mostrarMensajeFinal(mensajeFinal); 
+        reiniciarPartida();
+    }
+}
 // Iniciar juego basado en la elección del usuario
 function iniciarJuego(eleccionUsuario) {
     let resultadoRandom = opcionesRandom(opciones);
@@ -212,7 +213,7 @@ function animarImagen() {
 function mostrarModalInstrucciones() {
     Swal.fire({
         title: 'Instrucciones',
-        text: 'Para empezar a jugar presiona "Iniciar Partida".',
+        text: 'Para empezar a jugar selecciona el numero de manos y luego presiona "Iniciar Partida".',
         background: 'rgb(6, 18, 87)',
         color: 'whitesmoke',  // Color del texto
         customClass: {
@@ -244,7 +245,7 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
     }).then((result) => {
         if (result.isConfirmed) {
             reiniciarPartida();
-            cargarResultadosAlCargarPagina(); // Cargar resultados al iniciar
+            
             cargarEstadoPartida(); // Cargar estado de partida al iniciar
 
             // Habilitar los botones para jugar
