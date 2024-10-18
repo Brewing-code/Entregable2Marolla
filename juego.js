@@ -1,5 +1,5 @@
 // Definimos opciones como array con sus posibles valores
-let opciones = ['Piedra', 'Papel', 'Tijera', 'Lagarto', 'Spock'];
+let opciones = []; // Cambiamos a un array vacío que se llenará con fetch
 let victorias = 0;
 let derrotas = 0;
 let empates = 0;
@@ -93,8 +93,6 @@ function mostrarMensajeFinal(mensajeFinal) {
     });
 }
 
-
-
 // Verifica si alguien ganó la partida
 function verificarGanador(totalManos) {
     let umbralVictorias = Math.ceil(maxManos / 2);
@@ -106,6 +104,7 @@ function verificarGanador(totalManos) {
         reiniciarPartida();
     }
 }
+
 // Función que compara los resultados y determina el ganador
 function compararResultados(resultadoRandom, eleccionUsuario) {
     let combinacion = resultadoRandom + '-' + eleccionUsuario;
@@ -197,7 +196,7 @@ function iniciarJuego(eleccionUsuario) {
 function mostrarModalInstrucciones() {
     Swal.fire({
         title: 'Instrucciones',
-        text: 'Para empezar a jugar selecciona el numero de manos y luego presiona "Iniciar Partida".',
+        text: 'Para empezar a jugar selecciona el número de manos y luego presiona "Iniciar Partida".',
         background: 'rgb(6, 18, 87)',
         color: 'whitesmoke',  // Color del texto
         customClass: {
@@ -206,6 +205,19 @@ function mostrarModalInstrucciones() {
         },
         confirmButtonText: 'Entendido'
     });
+}
+
+// Cargar opciones desde un archivo JSON usando fetch y async/await
+async function cargarOpciones() {
+    try {
+        const response = await fetch('opciones.json'); // Carga el archivo JSON
+        if (!response.ok) throw new Error('Error en la carga del archivo');
+        
+        const data = await response.json(); // Convierte la respuesta en JSON
+        opciones = data.opciones; // Actualiza el array de opciones
+    } catch (error) {
+        console.error('Error al cargar opciones:', error); // Maneja errores
+    }
 }
 
 // Evento para iniciar la partida
@@ -225,32 +237,31 @@ document.getElementById('iniciar-partida').addEventListener('click', () => {
             popup: 'popup-custom',
             confirmButton: 'confirm-button-custom',
             cancelButton: 'cancel-button-custom'
-        }
+        },
     }).then((result) => {
         if (result.isConfirmed) {
             reiniciarPartida();
-
-            // Habilitar los botones para jugar
+            cargarEstadoPartida(); // Cargar el estado de la partida    
+            actualizarMarcador(); // Actualizar el marcador al inicio
             const botonesJuego = document.querySelectorAll('.opcion');
             botonesJuego.forEach(boton => {
-                boton.disabled = false;
+                boton.disabled = false; // Habilitar botones
             });
         }
     });
 });
 
-// Agregar eventos a los botones de juego
-document.querySelectorAll('.opcion').forEach(boton => {
-    boton.addEventListener('click', (event) => {
-        const eleccionUsuario = event.target.getAttribute('data-eleccion');
-        iniciarJuego(eleccionUsuario);
-    });
-});
-
 // Al cargar el DOM
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await cargarOpciones(); // Cargar las opciones al iniciar
     cargarEstadoPartida(); // Cargar el estado de la partida    
     if (!localStorage.getItem('partidaEnCurso') && !localStorage.getItem('resultados')) {
         mostrarModalInstrucciones(); // Mostrar modal de instrucciones
     }
+});
+
+// Asignar eventos a los botones de opciones
+const botonesJuego = document.querySelectorAll('.opcion');
+botonesJuego.forEach(boton => {
+    boton.addEventListener('click', () => iniciarJuego(boton.dataset.eleccion));
 });
