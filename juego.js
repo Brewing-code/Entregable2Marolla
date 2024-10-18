@@ -3,7 +3,7 @@ let opciones = ['Piedra', 'Papel', 'Tijera', 'Lagarto', 'Spock'];
 let victorias = 0;
 let derrotas = 0;
 let empates = 0;
-let maxManos = 10; // Puedes cambiar este valor a 20 si es necesario
+let maxManos = 10; // Valor por defecto
 
 class Resultado {
     constructor(mano, eleccionUsuario, resultadoRandom, mensaje) {
@@ -18,6 +18,18 @@ class Resultado {
 function opcionesRandom(arr) {
     let opcionRandom = Math.floor(Math.random() * arr.length);
     return arr[opcionRandom];
+}
+
+// Verifica si alguien ganó la partida
+function verificarGanador(totalManos) {
+    let umbralVictorias = Math.ceil(maxManos / 2);
+
+    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
+        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
+                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
+        mostrarMensajeFinal(mensajeFinal); 
+        reiniciarPartida();
+    }
 }
 
 // Función que compara los resultados y determina el ganador
@@ -65,6 +77,7 @@ function compararResultados(resultadoRandom, eleccionUsuario) {
     actualizarMarcador();
     mostrarResultado(mensaje); 
     guardarResultadoEnLocalStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje);
+    guardarEstadoPartidaEnLocalStorage(); // Guardar el estado parcial tras cada mano
     verificarGanador(totalManos); // Pasamos el total de manos aquí
 }
 
@@ -81,39 +94,63 @@ function actualizarMarcador() {
 }
 
 // Guardar el resultado en local storage
-function guardarResultadoEnLocalStorage(mano, eleccionUsuario, resultadoRandom, mensaje) {
+function guardarResultadoEnLocalStorage(totalManos, eleccionUsuario, resultadoRandom, mensaje) {
     let resultados = JSON.parse(localStorage.getItem('resultados')) || [];
-    let nuevoResultado = new Resultado(mano, eleccionUsuario, resultadoRandom, mensaje);
+    let nuevoResultado = new Resultado(totalManos, eleccionUsuario, resultadoRandom, mensaje);
     resultados.push(nuevoResultado);
     localStorage.setItem('resultados', JSON.stringify(resultados));
 }
 
-// Verifica si alguien ganó la partida
-function verificarGanador(totalManos) {
-    let umbralVictorias = Math.ceil(maxManos / 2);
+// Guardar el estado de la partida en localStorage
+function guardarEstadoPartidaEnLocalStorage() {
+    const estadoPartida = {
+        victorias: victorias,
+        derrotas: derrotas,
+        empates: empates,
+        totalManos: parseInt(sessionStorage.getItem('totalManos')) || 0
+    };
+    localStorage.setItem('partidaEnCurso', JSON.stringify(estadoPartida));
+}
 
-    if (victorias >= umbralVictorias || derrotas >= umbralVictorias || totalManos >= maxManos) {
-        let mensajeFinal = victorias > derrotas ? 'Ganaste, genio del azar' :
-                           derrotas > victorias ? 'Perdiste pichón' : 'Empate aburrido';
-        mostrarMensajeFinal(mensajeFinal); 
-        reiniciarPartida();
+// Cargar estado de la partida en curso al cargar la página
+function cargarEstadoPartida() {
+    const partidaGuardada = JSON.parse(localStorage.getItem('partidaEnCurso'));
+    if (partidaGuardada) {
+        victorias = partidaGuardada.victorias;
+        derrotas = partidaGuardada.derrotas;
+        empates = partidaGuardada.empates;
+        let totalManos = partidaGuardada.totalManos;
+        
+        sessionStorage.setItem('totalManos', totalManos); // Restablecer el total de manos en sessionStorage
+        actualizarMarcador();
+
+        // Habilitar los botones para continuar la partida
+        const botonesJuego = document.querySelectorAll('.opcion');
+        botonesJuego.forEach(boton => {
+            boton.disabled = false;
+        });
+
+        document.getElementById('resultado').textContent = 'Termina lo que empezaste, querubín';
     }
 }
 
 // Muestra el mensaje final de la partida
-// Al finalizar la partida
 function mostrarMensajeFinal(mensajeFinal) {
-    
     Swal.fire({
         title: mensajeFinal,
         text: "¿Seguimos jugando?",
-        icon: 'info',
+        background: 'rgb(6, 18, 87)',
+        color: 'whitesmoke',  // Color del texto
+        customClass: {
+            popup: 'popup-custom',
+            confirmButton: 'confirm-button-custom',
+            cancelButton: 'cancel-button-custom'
+        },
         showCancelButton: true,
-        confirmButtonText: 'Iniciar partida',
-        cancelButtonText: 'Salir',
+        confirmButtonText: 'Sigamos',
+        cancelButtonText: 'Ya fue, es un embole',
     }).then((result) => {
         if (result.isConfirmed) {
-            // Reinicia la partida si se presiona "Iniciar partida"
             reiniciarPartida();
             actualizarMarcador();
             document.getElementById('resultado').textContent = '';
@@ -121,7 +158,7 @@ function mostrarMensajeFinal(mensajeFinal) {
             botonesJuego.forEach(boton => {
                 boton.disabled = false; // Habilitar botones
             });
-        } 
+        }
     });
 }
 
@@ -131,6 +168,7 @@ function reiniciarPartida() {
     derrotas = 0;
     empates = 0;
     sessionStorage.removeItem('totalManos'); // Limpiar total de manos en sessionStorage
+    localStorage.removeItem('partidaEnCurso'); // Limpiar estado de partida
 
     const botonesJuego = document.querySelectorAll('.opcion');
     botonesJuego.forEach(boton => {
@@ -158,7 +196,6 @@ function cargarResultadosAlCargarPagina() {
         let totalManos = resultadosGuardados.length; // Total de manos jugadas
         sessionStorage.setItem('totalManos', totalManos); // Guardar total de manos en sessionStorage
         actualizarMarcador();
-        
     }
 }
 
@@ -171,45 +208,66 @@ function animarImagen() {
     }, 1000);
 }
 
+// Mostrar modal de instrucciones al cargar la página por primera vez
+function mostrarModalInstrucciones() {
+    Swal.fire({
+        title: 'Instrucciones',
+        text: 'Para empezar a jugar presiona "Iniciar Partida".',
+        background: 'rgb(6, 18, 87)',
+        color: 'whitesmoke',  // Color del texto
+        customClass: {
+            popup: 'popup-custom',
+            confirmButton: 'confirm-button-custom',
+        },
+        confirmButtonText: 'Entendido'
+    });
+}
+
 // Evento para iniciar la partida
 document.getElementById('iniciar-partida').addEventListener('click', () => {
+    // Obtener la opción seleccionada
+    const seleccion = document.getElementById('opciones-partida').value;
+    maxManos = parseInt(seleccion); // Actualiza maxManos según la selección
+
     Swal.fire({
         title: '¿Estás seguro de que quieres iniciar una nueva partida?',
-        icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Iniciar partida',
         cancelButtonText: 'Cancelar',
+        background: 'rgb(6, 18, 87)',
+        color: 'whitesmoke',  // Color del texto
+        customClass: {
+            popup: 'popup-custom',
+            confirmButton: 'confirm-button-custom',
+            cancelButton: 'cancel-button-custom'
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             reiniciarPartida();
-            actualizarMarcador();
-            
-            document.getElementById('resultado').textContent = '';
+            cargarResultadosAlCargarPagina(); // Cargar resultados al iniciar
+            cargarEstadoPartida(); // Cargar estado de partida al iniciar
+
+            // Habilitar los botones para jugar
             const botonesJuego = document.querySelectorAll('.opcion');
             botonesJuego.forEach(boton => {
-                boton.disabled = false; // Habilitar botones solo si se acepta el confirm
+                boton.disabled = false;
             });
         }
     });
 });
 
-// Agregar eventos a los botones al cargar la página
-window.onload = function() {
-    const botonesJuego = document.querySelectorAll('.opcion');
-
-    // Deshabilitamos los botones al cargar la página
-    botonesJuego.forEach(boton => {
-        boton.disabled = true;
+// Agregar eventos a los botones de juego
+document.querySelectorAll('.opcion').forEach(boton => {
+    boton.addEventListener('click', (event) => {
+        const eleccionUsuario = event.target.getAttribute('data-eleccion');
+        iniciarJuego(eleccionUsuario);
     });
+});
 
-    // Cargar resultados si hay una partida guardada
-    cargarResultadosAlCargarPagina();
-
-    // Agregar eventos a los botones de opción
-    botonesJuego.forEach(button => {
-        button.addEventListener('click', (event) => {
-            let eleccionUsuario = event.target.getAttribute('data-eleccion');
-            iniciarJuego(eleccionUsuario);
-        });
-    });
-}
+// Al cargar el DOM
+document.addEventListener('DOMContentLoaded', () => {
+    cargarEstadoPartida(); // Cargar el estado de la partida    
+    if (!localStorage.getItem('partidaEnCurso') && !localStorage.getItem('resultados')) {
+        mostrarModalInstrucciones(); // Mostrar modal de instrucciones
+    }
+});
